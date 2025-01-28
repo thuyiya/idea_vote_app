@@ -13,8 +13,10 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, SxProps, ThemeProvider } from '@mui/material/styles';
 import { useState } from 'react';
+import { login } from '../../utils/api';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-function Copyright({ sx }: { sx: SxProps}) {
+function Copyright({ sx }: { sx: SxProps }) {
     return (
         <Typography variant="body2" color="text.secondary" align="center" sx={sx}>
             {'Copyright © '}
@@ -35,33 +37,49 @@ export default function LoginPage() {
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         // Basic email and password validation
         const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
         if (!email || !emailRegex.test(email)) {
             setEmailError('Please enter a valid email address');
+            return;
         } else {
             setEmailError('');
         }
 
         if (!password || password.length < 6) {
             setPasswordError('Password must be at least 6 characters');
+            return;
         } else {
             setPasswordError('');
         }
 
-        // Simulate successful login (replace with actual login logic)
-        if (email === 'test@example.com' && password === 'password123') {
-            localStorage.setItem('isLoggedIn', 'true');
-            // Redirect to the home page or another protected route
-            // window.location.href = '/home'; 
-        } else {
+        try {
+            // Call the login API
+            const response = await login(email, password);
+
+            // Save the token to localStorage
+            localStorage.setItem('token', response.data.token);
+
+            navigate("/", { replace: true });
+        } catch (error) {
             // Handle login failure (e.g., display an error message)
             alert('Invalid email or password');
+            console.error('Login failed:', error);
         }
     };
+
+    React.useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token?.length && location.pathname === "/login") {
+            navigate('/', { replace: true})
+        }
+    }, [])
 
     return (
         <ThemeProvider theme={theme}>
