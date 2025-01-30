@@ -18,11 +18,14 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { navigationItems, secondaryNavigationItems } from '../routes/drawer';
-import NotificationsIcon from '@mui/icons-material/Notifications'; 
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useThemeContext } from '../theme/ThemeProvider';
-import Brightness4Icon from '@mui/icons-material/Brightness4'; 
-import Brightness7Icon from '@mui/icons-material/Brightness7'; 
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import { Avatar, Badge, Menu, MenuItem, Popover } from '@mui/material';
+import { NotificationsList } from '../components/NotificationsList';
+import { Logout } from '@mui/icons-material';
 
 const drawerWidth = 240;
 
@@ -104,6 +107,13 @@ export default function MiniDrawer() {
     const [open, setOpen] = React.useState(false);
     const navigate = useNavigate();
     const { mode, toggleTheme } = useThemeContext();
+    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [anchorElNotification, setAnchorElNotification] = React.useState<HTMLButtonElement | null>(null);
+
+    const isMenuOpen = Boolean(anchorEl);
+    const isNotificationOpen = Boolean(anchorElNotification);
+    const menuId = 'account-menu';
+    const notificationId = open ? 'notification-popover' : undefined;
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -116,6 +126,89 @@ export default function MiniDrawer() {
     const handleNavigationClick = (route: string) => {
         navigate(route);
     };
+
+    const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleProfileMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleNotificationClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorElNotification(event.currentTarget);
+    };
+
+    const handleNotificationClose = () => {
+        setAnchorElNotification(null);
+    };
+
+    const logout = () => {
+        handleProfileMenuClose()
+        localStorage.clear();
+        navigate("/login")
+    }
+
+    const renderProfileMenu = (
+        <Menu
+            anchorEl={anchorEl}
+            anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+            }}
+            id={menuId}
+            keepMounted
+            transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+            }}
+            open={isMenuOpen}
+            onClose={handleProfileMenuClose}
+        >
+            <MenuItem sx={{ width: 200}} onClick={() => {
+                toggleTheme();
+                setTimeout(() => {
+                    handleProfileMenuClose()
+                }, 300);
+            }}>
+                {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+                <Typography sx={{ ml: 2 }}>{mode === 'dark' ? "Light" : "Dark"}</Typography>
+            </MenuItem>
+            <MenuItem onClick={() => {
+                navigate("/profile");
+                handleDrawerClose();
+            }}>
+                <ListItemIcon>
+                    <Avatar sx={{ width: 24, height: 24 }} /> 
+                </ListItemIcon>
+                My Account
+            </MenuItem>
+            <MenuItem onClick={logout}>
+                <ListItemIcon>
+                    <Logout fontSize="small" />
+                </ListItemIcon>
+                Logout
+            </MenuItem>
+        </Menu>
+    );
+
+    const renderNotification = (<Popover
+        id={notificationId}
+        open={isNotificationOpen}
+        anchorEl={anchorElNotification}
+        onClose={handleNotificationClose}
+        anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+        }}
+        transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+        }}
+    >
+        <NotificationsList onClose={handleNotificationClose} />
+    </Popover>
+    )
 
     return (
         <Box sx={{ display: 'flex' }}>
@@ -137,17 +230,19 @@ export default function MiniDrawer() {
                     <Typography variant="body2" noWrap component="div">
                         GreenFuture Innovation Management System
                     </Typography>
-                    <Box sx={{ flexGrow: 1}} />
-                    <IconButton color="inherit" onClick={toggleTheme}>
-                        {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-                    </IconButton>
-                    <IconButton color="inherit" onClick={() => console.log('Notifications clicked')}>
-                        <NotificationsIcon />
-                    </IconButton>
-                    {/* User Icon */}
-                    <IconButton color="inherit" onClick={() => console.log('User profile clicked')}>
-                        <AccountCircleIcon />
-                    </IconButton>
+                    <Box sx={{ flexGrow: 1 }} />
+                    <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
+                        <IconButton color="inherit" aria-describedby={notificationId} onClick={handleNotificationClick}>
+                            <Badge badgeContent={17} color="error">
+                                <NotificationsIcon />
+                            </Badge>
+                        </IconButton>
+                        {/* User Icon */}
+                        <IconButton color="inherit" onClick={handleProfileMenuOpen}>
+                            <AccountCircleIcon />
+                        </IconButton>
+                    </Box>
+
                 </Toolbar>
             </AppBar>
             <Drawer variant="permanent" open={open}>
@@ -169,7 +264,7 @@ export default function MiniDrawer() {
                                     px: 2.5,
                                     justifyContent: open ? 'initial' : 'center',
                                 }}
-                                onClick={() => handleNavigationClick(item.route)} 
+                                onClick={() => handleNavigationClick(item.route)}
                             >
                                 <ListItemIcon
                                     sx={{
@@ -202,7 +297,7 @@ export default function MiniDrawer() {
                                         justifyContent: 'center',
                                         mr: open ? 3 : 'auto',
                                     }}
-                                    onClick={() => handleNavigationClick(item.route)} 
+                                    onClick={() => handleNavigationClick(item.route)}
                                 >
                                     {item.icon}
                                 </ListItemIcon>
@@ -216,6 +311,8 @@ export default function MiniDrawer() {
                 <DrawerHeader />
                 <Outlet />
             </Box>
+            {renderProfileMenu}
+            {renderNotification}
         </Box>
     );
 }
