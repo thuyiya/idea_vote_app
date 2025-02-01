@@ -2,32 +2,46 @@ const Idea = require('../models/idea');
 
 async function createIdea(ideaData, userId) {
     try {
-        const {
-            title,
-            description
-        } = ideaData;
+        const { title, description } = ideaData;
 
         const createIdea = new Idea({
             userId,
             title,
-            description
-        })
+            description,
+            status: 'Neutral'
+        });
 
         const saveIdea = await createIdea.save();
         return saveIdea;
     } catch (error) {
-        console.log(error)
-        throw error
+        throw error;
     }
 }
 
 async function getAllIdeas() {
     try {
-        const ideas = await Idea.find({})
+        const ideas = await Idea.find({});
         return ideas;
     } catch (error) {
-        console.log(error)
-        throw error
+        throw error;
+    }
+}
+
+async function updateIdeaStatus(ideaId, status) {
+    try {
+        const validStatuses = ['Approved', 'Rejected', 'Neutral'];
+        if (!validStatuses.includes(status)) {
+            throw new Error("Invalid status");
+        }
+
+        const updatedIdea = await Idea.findByIdAndUpdate(ideaId, { status }, { new: true });
+        if (!updatedIdea) {
+            throw new Error("Idea not found");
+        }
+
+        return updatedIdea;
+    } catch (error) {
+        throw error;
     }
 }
 
@@ -39,7 +53,6 @@ async function removeIdea(ideaId, userId) {
         }
         return idea;
     } catch (error) {
-        console.log(error);
         throw error;
     }
 }
@@ -49,5 +62,6 @@ async function removeIdea(ideaId, userId) {
 module.exports = {
     getAllIdeas,
     createIdea,
-    removeIdea
+    removeIdea,
+    updateIdeaStatus
 }

@@ -22,18 +22,32 @@ const getAllIdeas = async (req, res) => {
 
 const removeIdea = async (req, res) => {
     try {
-        const { ideaId } = req.params;
+        const { id } = req.params;
         const userId = req.user._id;
 
-        const idea = await ideaService.removeIdea(ideaId, userId);
+        const idea = await ideaService.removeIdea(id, userId);
         res.status(200).json({ message: "Idea removed successfully", idea });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
 
+const updateIdeaStatus = async (req, res) => {
+    try {
+        const { ideaId } = req.params;
+        const { status } = req.body; // The new status passed in the request body
+
+        const updatedIdea = await ideaService.updateIdeaStatus(ideaId, status);
+        res.status(200).json({ message: "Idea status updated", idea: updatedIdea });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+
 module.exports = {
     createIdea,
     getAllIdeas,
-    removeIdea
+    removeIdea,
+    updateIdeaStatus
 }

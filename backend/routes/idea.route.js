@@ -10,7 +10,10 @@ router.post('/create', authMiddleware.authenticateToken, ideaController.createId
 // Get all ideas
 router.get('/all', authMiddleware.authenticateToken, ideaController.getAllIdeas);
 
+// Update idea status
+router.put('/:ideaId/status', authMiddleware.authenticateToken, ideaController.updateIdeaStatus);
+
 // Remove an idea
-router.delete('/:ideaId', authMiddleware.authenticateToken, ideaController.removeIdea);
+router.delete('/:id', authMiddleware.authenticateToken, ideaController.removeIdea);
 
 module.exports = router;
