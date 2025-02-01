@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const body_parser = require('body-parser');
 const userRoute = require('./routes/user.route');
+const authRoute = require('./routes/auth.route');
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -13,7 +14,8 @@ app.use(morgan('dev')); // Logs requests in the console
 app.use(body_parser.json());
 app.use(cors());
 
-app.use("/api/auth", userRoute)
+app.use("/api/users", userRoute)
+app.use("/api/auth", authRoute)
 
 app.use(cors({
     origin: '*', // Allow all origins (for development only)

@@ -21,6 +21,18 @@ async function createUser(userData) {
     }
 }
 
+async function getAllUsers() {
+    try {
+        const users = await User.find({})
+        return users;
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}
+
+
 module.exports = {
-    createUser
+    createUser,
+    getAllUsers
 }
