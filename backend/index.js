@@ -7,6 +7,7 @@ const userRoute = require('./routes/user.route');
 const authRoute = require('./routes/auth.route');
 const ideaRoute = require('./routes/idea.route');
 const voteRoute = require('./routes/vote.route');
+const notificationRoute = require('./routes/notification.route');
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -20,6 +21,7 @@ app.use("/api/users", userRoute)
 app.use("/api/auth", authRoute)
 app.use("/api/ideas", ideaRoute)
 app.use("/api/votes", voteRoute)
+app.use("/api/notifications", notificationRoute)
 
 app.use(cors({
     origin: '*', // Allow all origins (for development only)

@@ -1,4 +1,5 @@
 const Vote = require('../models/vote');
+const Notification = require('../models/notification');
 
 async function createVote(userId, ideaId) {
     try {
@@ -8,10 +9,21 @@ async function createVote(userId, ideaId) {
         }
 
         const vote = new Vote({ userId, ideaId });
-        await vote.save();
+        const savedVote = await vote.save();
 
+        // Create notification for the relevant user
+        const notification = new Notification({
+            userId: ideaId,  // Notify the user who created the idea
+            title: "New Vote on Your Idea",
+            description: `Your idea titled '${savedVote.ideaId}' has received a new vote.`,
+            ideaId: savedVote.ideaId,
+            voteId: savedVote._id,  // Link to the vote
+            status: 'Not-Read',
+        });
+
+        await notification.save();
         // Optionally, you can update the idea with the vote count
-        return vote;
+        return savedVote;
     } catch (error) {
         throw error;
     }
