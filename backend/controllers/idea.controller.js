@@ -35,9 +35,9 @@ const removeIdea = async (req, res) => {
 const updateIdeaStatus = async (req, res) => {
     try {
         const { ideaId } = req.params;
-        const { status } = req.body; // The new status passed in the request body
+        const { status, comment } = req.body; // The new status passed in the request body
 
-        const updatedIdea = await ideaService.updateIdeaStatus(ideaId, status);
+        const updatedIdea = await ideaService.updateIdeaStatus(ideaId, status, req.user._id, comment);
         res.status(200).json({ message: "Idea status updated", idea: updatedIdea });
     } catch (error) {
         res.status(400).json({ message: error.message });

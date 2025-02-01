@@ -1,5 +1,6 @@
 const Idea = require('../models/idea');
 const Notification = require('../models/notification');
+const IdeaComment = require('../models/idea-comment');
 
 async function createIdea(ideaData, userId) {
     try {
@@ -39,7 +40,7 @@ async function getAllIdeas() {
     }
 }
 
-async function updateIdeaStatus(ideaId, status) {
+async function updateIdeaStatus(ideaId, status, userId, comment) {
     try {
         const validStatuses = ['Approved', 'Rejected', 'Neutral'];
         if (!validStatuses.includes(status)) {
@@ -50,6 +51,14 @@ async function updateIdeaStatus(ideaId, status) {
         if (!updatedIdea) {
             throw new Error("Idea not found");
         }
+
+        const ideaComment = new IdeaComment.create({
+            userId,
+            ideaId,
+            comment: comment || "NO COMMENT ADDED"
+        })
+
+        await ideaComment.save();
 
         // Create notification for the relevant user
         const notification = new Notification({
