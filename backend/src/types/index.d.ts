@@ -1,8 +1,10 @@
 import { Request } from 'express';
+import User from '../models/User';
 
-export interface Req extends Request {
-    user?: {
-        userId: string;
-        role: string;
-    };
+declare global {
+    namespace Express {
+        interface Request {
+            user: User;
+        }
+    }
 }

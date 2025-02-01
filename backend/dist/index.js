@@ -9,6 +9,8 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const morgan_1 = __importDefault(require("morgan")); // Import morgan for HTTP request logging
 const auth_1 = __importDefault(require("./routes/auth"));
+const ideas_1 = __importDefault(require("./routes/ideas"));
+const votes_1 = __importDefault(require("./routes/votes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
@@ -28,6 +30,8 @@ mongoose_1.default.connect(process.env.MONGO_URI)
     .catch(err => console.log(err));
 // Routes
 app.use('/api/auth', auth_1.default);
+app.use('/api/ideas', ideas_1.default);
+app.use('/api/votes', votes_1.default);
 app.get('/', (req, res) => {
     res.send('Idea Vote App Backend');
 });

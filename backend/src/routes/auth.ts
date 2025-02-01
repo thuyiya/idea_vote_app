@@ -1,18 +1,16 @@
 // backend/src/routes/auth.ts
-import express, { Response } from 'express';
+import express, { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import dotenv from 'dotenv';
-import { Req } from '../types';
 
 dotenv.config();
 
 const router = express.Router();
 
 // Register (only for admin)
-router.post('/register', async (req: Req, res: Response) => {
+router.post('/register', async (req: Request, res: Response) => {
     const { username, email, password, role } = req.body;
-
     // Check if the requester is an admin
     const requester = await User.findById(req.user?.userId);
     if (requester?.role !== 'admin') {
@@ -30,7 +28,7 @@ router.post('/register', async (req: Req, res: Response) => {
 });
 
 // Login
-router.post('/login', async (req: Req, res: Response) => {
+router.post('/login', async (req: Request, res: Response) => {
     const { email, password } = req.body;
     try {
         const user = await User.findOne({ email });
@@ -38,7 +36,7 @@ router.post('/login', async (req: Req, res: Response) => {
              res.status(401).json({ error: 'Invalid credentials' });
             return
         }
-        const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '1h' });
+        const token = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '1h' });
         res.json({ token, role: user.role });
     } catch (err) {
         res.status(500).json({ error: 'Login failed' });

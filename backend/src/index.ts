@@ -4,6 +4,8 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import morgan from 'morgan'; // Import morgan for HTTP request logging
 import authRoutes from './routes/auth';
+import ideasRoutes from './routes/ideas';
+import votesRoutes from './routes/votes';
 
 dotenv.config();
 
@@ -30,6 +32,8 @@ mongoose.connect(process.env.MONGO_URI!)
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/ideas', ideasRoutes);
+app.use('/api/votes', votesRoutes);
 
 app.get('/', (req, res) => {
     res.send('Idea Vote App Backend');
