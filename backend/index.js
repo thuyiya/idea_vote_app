@@ -5,6 +5,8 @@ const cors = require('cors');
 const body_parser = require('body-parser');
 const userRoute = require('./routes/user.route');
 const authRoute = require('./routes/auth.route');
+const ideaRoute = require('./routes/idea.route');
+const voteRoute = require('./routes/vote.route');
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -16,6 +18,8 @@ app.use(cors());
 
 app.use("/api/users", userRoute)
 app.use("/api/auth", authRoute)
+app.use("/api/ideas", ideaRoute)
+app.use("/api/votes", voteRoute)
 
 app.use(cors({
     origin: '*', // Allow all origins (for development only)
