@@ -18,6 +18,7 @@ import { getAllEmployees, getLastMonthEmployees } from "../../utils/userService"
 import { fetchIdeas, fetchIdeasByStatus } from "../../utils/ideaService";
 import { IdeaStatus } from "../../types";
 import { fetchBestVoteIdeas, fetchVotes } from "../../utils/voteService";
+import { Lightbulb, People, ThumbUp } from "@mui/icons-material";
 
 Chart.register(...registerables);
 
@@ -157,47 +158,103 @@ const Dashboard = () => {
         }
     }, [data]);
 
+
+    console.log(data)
+
     return (
         <Box sx={{ padding: 3 }}>
             {/* Summary Cards */}
-            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "space-between" }}>
-                {/* Employee Summary */}
-                <Box sx={{ flex: 1, minWidth: "280px" }}>
-                    <Card>
-                        <CardContent sx={{ height: 280 }}>
-                            <Typography variant="h6">Employees</Typography>
-                            <Typography variant="h4">{data.employees}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                New this month: {data.newEmployeesThisMonth}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Box>
-
-                {/* Idea Summary */}
-                <Box sx={{ flex: 1, minWidth: "280px" }}>
-                    <Card>
-                        <CardContent sx={{ height: 280 }}>
-                            <Typography variant="h6">Ideas</Typography>
-                            <Typography variant="h4">{data.totalIdeas}</Typography>
-                            <Typography variant="body2">Approved: {data.approvedIdeas}</Typography>
-                            <Typography variant="body2">Rejected: {data.rejectedIdeas}</Typography>
-                        </CardContent>
-                    </Card>
-                </Box>
-
-                {/* Vote Summary */}
-                <Box sx={{ flex: 1, minWidth: "280px" }}>
-                    <Card>
-                        <CardContent sx={{ height: 280 }}>
-                            <Typography variant="h6">Votes</Typography>
-                            <Typography variant="h4">{data.voteCount}</Typography>
-                            <Typography variant="body2">Top 5 Ideas</Typography>
-                            {data.topIdeas.map((idea, index) => (
-                                <Typography key={index} variant="body2">
-                                    {idea.title}: {idea.votes} votes
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    flexWrap: "wrap",
+                    gap: 3,
+                    mt: 3,
+                }}
+            >
+                {/* Employees Card */}
+                <Box sx={{ flex: 1, minWidth: 280 }}>
+                    <Card
+                        sx={{
+                            background: "linear-gradient(135deg, #42a5f5, #1976d2)",
+                            color: "white",
+                            borderRadius: 3,
+                            boxShadow: 3,
+                            transition: "transform 0.3s ease",
+                            "&:hover": { transform: "scale(1.05)" },
+                        }}
+                    >
+                        <CardContent sx={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', textAlign: "center", height: 200 }}>
+                            
+                            <Box>
+                                <People sx={{ fontSize: 50, mb: 1 }} />
+                                <Typography variant="h4">Employees</Typography>
+                                <Typography variant="h4">{data.employees}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+    
+                                <Typography variant="h6">
+                                    New this month: <strong>{data.newEmployeesThisMonth}</strong>
                                 </Typography>
-                            ))}
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Box>
+
+                {/* Ideas Card */}
+                <Box sx={{ flex: 1, minWidth: 280 }}>
+                    <Card
+                        sx={{
+                            background: "linear-gradient(135deg, #66bb6a, #2e7d32)",
+                            color: "white",
+                            borderRadius: 3,
+                            boxShadow: 3,
+                            transition: "transform 0.3s ease",
+                            "&:hover": { transform: "scale(1.05)" },
+                        }}
+                    >
+                        <CardContent sx={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', textAlign: "center", height: 200 }}>
+                           <Box>
+                                <Lightbulb sx={{ fontSize: 50, mb: 1 }} />
+                                <Typography variant="h4">Ideas</Typography>
+                                <Typography variant="h4">{data.totalIdeas}</Typography>
+                           </Box>
+                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                <Typography variant="h6">Approved: <strong>{data.approvedIdeas}</strong></Typography>
+                                <Typography variant="h6">Rejected: <strong>{data.rejectedIdeas}</strong></Typography>
+                            </Box>
+                           
+                        </CardContent>
+                    </Card>
+                </Box>
+
+                {/* Votes Card */}
+                <Box sx={{ flex: 1, minWidth: 280 }}>
+                    <Card
+                        sx={{
+                            background: "linear-gradient(135deg, #ff9800, #e65100)",
+                            color: "white",
+                            borderRadius: 3,
+                            boxShadow: 3,
+                            transition: "transform 0.3s ease",
+                            "&:hover": { transform: "scale(1.05)" },
+                        }}
+                    >
+                        <CardContent sx={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', textAlign: "center", height: 200 }}>
+                            <Box>
+                            <ThumbUp sx={{ fontSize: 50, mb: 1 }} />
+                                <Typography variant="h4">Votes</Typography>
+                                <Typography variant="h4">{data.voteCount}</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                <Typography variant="h6">Top 5 Ideas:</Typography>
+                                {data.topIdeas.slice(0, 3).map((idea, index) => (
+                                    <Typography key={index} variant="body2">
+                                        {idea.title}: <strong>{idea.votes} votes</strong>
+                                    </Typography>
+                                ))}
+                            </Box>
                         </CardContent>
                     </Card>
                 </Box>

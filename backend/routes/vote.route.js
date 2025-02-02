@@ -102,8 +102,9 @@ router.get('/:ideaId/votes', authMiddleware.authenticateToken, voteController.ge
  *         description: Unauthorized Access
  */
 
-router.delete('/:id', authMiddleware.authenticateToken, voteController.removeVote);
+router.delete('/remove/:id', authMiddleware.authenticateToken, voteController.removeVote);
 router.get('/all', authMiddleware.authenticateToken, voteController.getAllVotes);
+router.get('/', authMiddleware.authenticateToken, voteController.getMyVotes);
 router.get('/best', authMiddleware.authenticateToken, voteController.getBestIdeasByVotes);
 
 module.exports = router;

@@ -6,7 +6,7 @@ const createVote = async (req, res) => {
         const userId = req.user._id;
 
         const vote = await voteService.createVote(userId, ideaId);
-        res.status(201).json({ message: "Vote created successfully", vote });
+        res.status(201).json(vote);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -43,6 +43,15 @@ const getAllVotes = async (req, res) => {
     }
 };
 
+const getMyVotes = async (req, res) => {
+    try {
+        const votes = await voteService.getMyVotes(req.user._id);
+        res.status(200).json(votes);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 const getBestIdeasByVotes = async (req, res) => {
     try {
         const votes = await voteService.getBestIdeasByVotes();
@@ -57,5 +66,6 @@ module.exports = {
     getVotesForIdea,
     removeVote,
     getAllVotes,
-    getBestIdeasByVotes
+    getBestIdeasByVotes,
+    getMyVotes
 };

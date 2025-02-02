@@ -6,29 +6,42 @@ async function createVote(userId, ideaId) {
     try {
         const existingVote = await Vote.findOne({ userId, ideaId });
         if (existingVote) {
-            throw new Error("User has already voted for this idea.");
+            // Remove vote
+            await Vote.deleteOne({ _id: existingVote._id });
+
+            // Remove notification related to this vote
+            await Notification.deleteOne({ voteId: existingVote._id });
+
+            return { message: "Vote removed successfully." };
         }
 
+        // Create new vote
         const vote = new Vote({ userId, ideaId });
         const savedVote = await vote.save();
 
         // Create notification for the relevant user
+        const ideaOwner = await Idea.findById(ideaId); // Assuming the Idea model exists
+        if (!ideaOwner) {
+            throw new Error("Idea not found");
+        }
+
         const notification = new Notification({
-            userId: ideaId,  // Notify the user who created the idea
+            userId: ideaOwner.userId, // Notify the user who created the idea
             title: "New Vote on Your Idea",
-            description: `Your idea titled '${savedVote.ideaId}' has received a new vote.`,
+            description: `Your idea titled '${ideaOwner.title}' has received a new vote.`,
             ideaId: savedVote.ideaId,
-            voteId: savedVote._id,  // Link to the vote
-            status: 'Not-Read',
+            voteId: savedVote._id, // Link to the vote
+            status: "Not-Read",
         });
 
         await notification.save();
-        // Optionally, you can update the idea with the vote count
+
         return savedVote;
     } catch (error) {
         throw error;
     }
 }
+
 
 async function getVotesForIdea(ideaId) {
     try {
@@ -54,6 +67,15 @@ async function removeVote(id) {
 async function getAllVotes() {
     try {
         const votes = await Vote.find({});
+        return votes;
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function getMyVotes(id) {
+    try {
+        const votes = await Vote.find({ userId : id});
         return votes;
     } catch (error) {
         throw error;
@@ -103,5 +125,6 @@ module.exports = {
     getVotesForIdea,
     removeVote,
     getAllVotes,
-    getBestIdeasByVotes
+    getBestIdeasByVotes,
+    getMyVotes
 };

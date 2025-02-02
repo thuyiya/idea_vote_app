@@ -52,9 +52,23 @@ async function getThisMonthRegisteredEmployees() {
     }
 }
 
+async function getProfile(id) {
+    try {
+        const user = await User.findOne({
+            _id: id
+        });
+
+        return user;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
 
 module.exports = {
     createUser,
     getAllUsers,
-    getThisMonthRegisteredEmployees
+    getThisMonthRegisteredEmployees,
+    getProfile
 }

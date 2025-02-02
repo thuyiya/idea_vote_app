@@ -161,7 +161,6 @@ export default function MiniDrawer() {
         const loadNotifications = async () => {
             try {
                 const response = await fetchNotification();
-                console.log(response.data)
                 setNotifications(response.data);
             } catch (error) {
                 console.error("Error fetching notifications:", error);

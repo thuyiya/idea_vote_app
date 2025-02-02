@@ -18,7 +18,7 @@ export const createIdea = async (idea: { title: string; description: string; use
 };
 
 // Update an existing idea
-export const updateIdeaStatus = async (ideaId: string, status: string, comment: string) => {
+export const updateIdeaStatus = async (ideaId: string, status: IdeaStatus, comment: string) => {
     return axiosInstance.put(`${API_URL}/${ideaId}/status`, { status, comment });
 };
 

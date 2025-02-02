@@ -19,3 +19,7 @@ export const logout = async () => {
 export const createUser = async (user: { name: string; username: string; email: string; password: string, role: string }) => {
     return axiosInstance.post(`${API_URL}/register`, user);
 };
+
+export const getProfile = async () => {
+    return axiosInstance.get(`${API_URL}/profile`);
+};

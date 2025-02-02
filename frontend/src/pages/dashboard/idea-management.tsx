@@ -20,11 +20,18 @@ import {
     Chip,
     MenuItem,
     Menu,
+    Snackbar,
+    Alert,
+    AlertColor,
+    AlertPropsColorOverrides,
 } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
 import { Idea, IdeaStatus } from "../../types";
 import { fetchIdeas, createIdea, updateIdea, deleteIdea, updateIdeaStatus } from "../../utils/ideaService";
+import { Star, StarBorder } from "@mui/icons-material";
+import { createVote, fetchMyVotes } from "../../utils/voteService";
+import { OverridableStringUnion } from "@mui/types";
 
 const IdeaTable = () => {
     const [ideas, setIdeas] = useState<Idea[]>([]);
@@ -35,6 +42,8 @@ const IdeaTable = () => {
     const [openCommentDialog, setOpenCommentDialog] = useState(false);
     const [comment, setComment] = useState("");
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [voteIds, setVoteIds] = useState<string[]>([])
+    const [openSnackbar, setOpenSnackbar] = useState({ open: false, message: "", severity: "success" });
 
     const openMenuStatus = Boolean(anchorEl);
 
@@ -55,18 +64,42 @@ const IdeaTable = () => {
                 setLoading(false);
             }
         };
-
+        fetchVotes();
         loadIdeas();
     }, []);
 
-    const handleStatusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const fetchVotes = async () => {
+        try {
+            const votes = await fetchMyVotes();
+            setVoteIds(votes.data.map((vote: { ideaId: string; }) => vote.ideaId));
+        } catch (error) {
+            console.error("Error deleting idea:", error);
+        }
+    };
+
+    const handleVote = async (id: string, isAdded: boolean) => {
+        try {
+            const vote = await createVote(id);
+            setVoteIds(prevState => !isAdded ? [...prevState, vote.data.ideaId] : prevState.filter(ideaId => ideaId !== id));
+            setOpenSnackbar({ open: true, message: `Vote ${!isAdded ? 'added' : 'removed'} successfully!`, severity: !isAdded ? "success" : "info" });
+        } catch (error) {
+            console.error("Error deleting idea:", error);
+            setOpenSnackbar({ open: true, message: "Vote removed successfully!", severity: "info" });
+        }
+    };
+
+    const handleStatusClick = (event: React.MouseEvent<HTMLButtonElement>, idea: Idea) => {
         if (userRole === 'staff' || userRole === 'admin') {
+            setEditingIdea(idea);
             setAnchorEl(event.currentTarget);
         }
     };
-    
-    const handleStatus = (idea: Idea, status: IdeaStatus) => {
-        setEditingIdea({ ...idea, status })
+
+    const handleStatus = (status: IdeaStatus) => {
+        setEditingIdea(prevState => prevState ? ({
+            ...prevState,
+            status
+        }): null)
         setOpenCommentDialog(true);
         handleStatusClose()
     };
@@ -89,16 +122,17 @@ const IdeaTable = () => {
     };
 
     const handleCommentSubmit = async () => {
-        if (comment && editingIdea?._id) {
-            try {
-                await updateIdeaStatus(editingIdea?._id, editingIdea?.status, comment );
+        try {
+            if (comment && editingIdea?._id) {
+                await updateIdeaStatus(editingIdea?._id, editingIdea?.status, comment);
                 setIdeas(ideas.map((idea) => (idea._id === editingIdea?._id ? { ...idea, status: editingIdea?.status, comment } : idea)));
-            } catch (error) {
-                console.error("Error updating status:", error);
+                setOpenSnackbar({ open: true, message: "Idea status updated successfully!", severity: "success" });
+                setEditingIdea(null)
+                setOpenCommentDialog(false);
+                setComment(""); // Clear the comment input after submission
             }
-            setEditingIdea(null)
-            setOpenCommentDialog(false);
-            setComment(""); // Clear the comment input after submission
+        } catch (error) {
+            console.error("Error updating status:", error);
         }
     };
 
@@ -108,9 +142,11 @@ const IdeaTable = () => {
             if (editingIdea) {
                 await updateIdea(editingIdea._id, data);
                 setIdeas(ideas.map((idea) => (idea._id === editingIdea._id ? { ...idea, ...data } : idea)));
+                setOpenSnackbar({ open: true, message: "Idea updated successfully!", severity: "success" });
             } else {
                 const response = await createIdea(data);
                 setIdeas([...ideas, response.data]);
+                setOpenSnackbar({ open: true, message: "Idea created successfully!", severity: "success" });
             }
             handleClose();
         } catch (error) {
@@ -133,8 +169,15 @@ const IdeaTable = () => {
         idea.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    console.log("editingIdea ", editingIdea);
+
     return (
         <Box>
+            <Snackbar open={openSnackbar.open} autoHideDuration={3000} anchorOrigin={{ vertical: 'top', horizontal: 'right' }} onClose={() => setOpenSnackbar({ open: false, message: "", severity: "success" })}>
+                <Alert severity={openSnackbar.severity as OverridableStringUnion<AlertColor, AlertPropsColorOverrides>} onClose={() => setOpenSnackbar({ open: false, message: "", severity: "success" })}>
+                    {openSnackbar.message}
+                </Alert>
+            </Snackbar>
             <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
                 <TextField
                     label="Search by Title"
@@ -162,7 +205,8 @@ const IdeaTable = () => {
                                 <TableCell>Created At</TableCell>
                                 <TableCell>Status</TableCell>
                                 <TableCell>Email</TableCell>
-                                <TableCell>Votes</TableCell>
+                                <TableCell>Votes Count</TableCell>
+                                <TableCell>Give Vote</TableCell>
                                 <TableCell>Actions</TableCell>
                             </TableRow>
                         </TableHead>
@@ -174,7 +218,7 @@ const IdeaTable = () => {
                                     <TableCell>{idea.createdAt}</TableCell>
                                     <TableCell>
                                         <Chip
-                                            component="button" 
+                                            component="button"
                                             label={idea.status}
                                             color={
                                                 idea.status === IdeaStatus.Reject
@@ -187,7 +231,7 @@ const IdeaTable = () => {
                                                 fontWeight: "bold",
                                                 textTransform: "capitalize",
                                             }}
-                                            onClick={handleStatusClick}
+                                            onClick={e => handleStatusClick(e, idea)}
                                         />
                                         <Menu
                                             id="status-menu"
@@ -198,13 +242,18 @@ const IdeaTable = () => {
                                                 'aria-labelledby': 'basic-button',
                                             }}
                                         >
-                                            <MenuItem onClick={() => handleStatus(idea, IdeaStatus.Approve)}>{IdeaStatus.Approve}</MenuItem>
-                                            <MenuItem onClick={() => handleStatus(idea, IdeaStatus.Reject)}>{IdeaStatus.Reject}</MenuItem>
-                                            <MenuItem onClick={() => handleStatus(idea, IdeaStatus.Neutral)}>{IdeaStatus.Neutral}</MenuItem>
+                                            <MenuItem onClick={() => handleStatus(IdeaStatus.Approve)}>{IdeaStatus.Approve}</MenuItem>
+                                            <MenuItem onClick={() => handleStatus(IdeaStatus.Reject)}>{IdeaStatus.Reject}</MenuItem>
+                                            <MenuItem onClick={() => handleStatus(IdeaStatus.Neutral)}>{IdeaStatus.Neutral}</MenuItem>
                                         </Menu>
                                     </TableCell>
                                     <TableCell>{idea.user?.email}</TableCell>
                                     <TableCell>{idea.voteCount}</TableCell>
+                                    <TableCell>{
+                                        <IconButton onClick={() => handleVote(idea._id, voteIds.includes(idea._id))}>
+                                            {voteIds.includes(idea._id) ? <Star color="warning" /> : <StarBorder />}
+                                        </IconButton>
+                                    }</TableCell>
                                     <TableCell>
                                         <IconButton onClick={() => handleOpen(idea)}>
                                             <Edit color="primary" />

@@ -28,8 +28,18 @@ const getThisMonthRegisteredEmployees = async (req, res) => {
     }
 }
 
+const getProfile = async (req, res) => {
+    try {
+        const users = await userService.getProfile(req.user._id);
+        res.status(201).json(users)
+    } catch (error) {
+        res.status(400).json({ message: "get users error" })
+    }
+}
+
 module.exports = {
     createUser,
     getAllUsers,
-    getThisMonthRegisteredEmployees
+    getThisMonthRegisteredEmployees,
+    getProfile
 }
