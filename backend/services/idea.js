@@ -1,4 +1,5 @@
 const Idea = require('../models/idea');
+const Vote = require('../models/vote');
 const Notification = require('../models/notification');
 const IdeaComment = require('../models/idea-comment');
 
@@ -33,8 +34,19 @@ async function createIdea(ideaData, userId) {
 
 async function getAllIdeas() {
     try {
-        const ideas = await Idea.find({});
-        return ideas;
+        const ideas = await Idea.find({})
+            .populate("userId", "name email") // Replace "name email" with the fields you want from the user schema
+            .lean(); // Converts Mongoose documents to plain JavaScript objects for easier manipulation
+
+        // Add vote count to each idea
+        const ideasWithVotes = await Promise.all(
+            ideas.map(async (idea) => {
+                const voteCount = await Vote.countDocuments({ ideaId: idea._id }); // Count votes for the idea
+                return { ...idea, voteCount }; // Add vote count to the idea object
+            })
+        );
+
+        return ideasWithVotes;
     } catch (error) {
         throw error;
     }

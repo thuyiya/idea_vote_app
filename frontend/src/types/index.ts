@@ -1,5 +1,5 @@
 type Idea = {
-    id: string;
+    _id: string;
     title: string;
     description: string;
     status: "Reject" | "Approve" | "Nural";
@@ -10,7 +10,7 @@ type Idea = {
 };
 
 type User = {
-    id: string;
+    _id: string;
     name: string;
     email: string;
     username: string;

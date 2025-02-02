@@ -1,40 +1,28 @@
-const bcrypt = require('bcrypt');
-
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const AccessToken = require("../models/access-token");
-const { generateToken } = require('../utils/jwt');
+const { secretKey } = require("../config/jwtConfig");
 
 const login = async (email, password) => {
-    try {
-        const existingUser = await User.findOne({ email }).select("+password");
-        if (!existingUser) {
-            throw new Error("Invalid credentials, please register");
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, existingUser.password);
-        if (!isPasswordValid) {
-            throw new Error("Invalid credentials");
-        }
-
-        const token = generateToken(existingUser);
-
-        // Save token in AccessToken collection
-        await AccessToken.create({ userId: existingUser._id, token });
-
-        return token;
-    } catch (error) {
-        console.log("--- ", error)
-        throw error;
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+        throw new Error("Invalid email or password");
     }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+        throw new Error("Invalid email or password");
+    }
+
+    // Save token in MongoDB
+    const token = await AccessToken.create({ userId: user._id, token: secretKey });
+
+    return token;
 };
 
 const logout = async (token) => {
-    try {
-        return await AccessToken.deleteOne({ token });
-
-    } catch (error) {
-        throw error
-    }
+    return await AccessToken.deleteOne({ token });
 };
 
 module.exports = { login, logout };

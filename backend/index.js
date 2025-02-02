@@ -11,9 +11,12 @@ const ideaRoute = require('./routes/idea.route');
 const voteRoute = require('./routes/vote.route');
 const notificationRoute = require('./routes/notification.route');
 const swaggerDocs = require('./config/swaggerConfig');
+const passport = require("./config/passportConfig");
 
 const app = express();
 const PORT = process.env.PORT || 3002;
+
+app.use(passport.initialize());
 
 app.use(morgan('dev')); // Logs requests in the console
 
