@@ -4,9 +4,14 @@ type Idea = {
     description: string;
     status: "Reject" | "Approve" | "Nural";
     userId: string;
+    user?: {
+        _id: string,
+        email: string
+    };
     createdAt: string; // Use string to store formatted date
     updatedAt: Date;
     approvedUserIds: string[];
+    voteCount?: number;
 };
 
 type User = {

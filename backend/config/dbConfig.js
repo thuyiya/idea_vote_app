@@ -1,16 +1,15 @@
-
 const mongoose = require('mongoose');
 
-console.log("process.env.MONGO_URI ", process.env.MONGO_URI)
-
-mongoose.connect(process.env.MONGO_URI);
+mongoose.connect(process.env.MONGO_URI, {
+    maxPoolSize: 20
+});
 
 mongoose.connection.on("connected", () => {
-    console.log("Connected to mongodb")
-})
+    console.log("Connected to MongoDB");
+});
 
 mongoose.connection.on("error", (err) => {
-    console.log("Mongodb connection error ", err)
-})
+    console.log("MongoDB connection error:", err);
+});
 
 module.exports = mongoose;

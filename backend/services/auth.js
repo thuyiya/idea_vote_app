@@ -16,7 +16,7 @@ const login = async (email, password) => {
     }
 
     // Save token in MongoDB
-    const token = await AccessToken.create({ userId: user._id, token: secretKey });
+    const { token } = await AccessToken.create({ userId: user._id, token: secretKey });
 
     return token;
 };

@@ -34,23 +34,65 @@ async function createIdea(ideaData, userId) {
 
 async function getAllIdeas() {
     try {
-        const ideas = await Idea.find({})
-            .populate("userId", "name email") // Replace "name email" with the fields you want from the user schema
-            .lean(); // Converts Mongoose documents to plain JavaScript objects for easier manipulation
+        const ideas = await Idea.aggregate([
+            // Step 1: Join with the "User" collection using $lookup
+            {
+                $lookup: {
+                    from: "users",  // The name of the user collection in MongoDB
+                    localField: "userId",  // Field in Idea collection
+                    foreignField: "_id",  // Field in User collection
+                    as: "user"  // This will return an array, so we use $unwind to turn it into an object
+                }
+            },
+            // Step 2: Unwind the "user" array to get a single user object (because $lookup returns an array)
+            {
+                $unwind: "$user"
+            },
+            // Step 3: Add the vote count for each idea, ensuring votes field exists and is an array
+            {
+                $addFields: {
+                    voteCount: {
+                        $size: {
+                            $ifNull: [
+                                {
+                                    $filter: {
+                                        input: "$votes", // Assuming you have an array of votes in the Idea document
+                                        as: "vote",
+                                        cond: { $eq: ["$$vote.ideaId", "$_id"] }  // Filtering votes based on ideaId
+                                    }
+                                },
+                                [] // Default to an empty array if "votes" is null or does not exist
+                            ]
+                        }
+                    }
+                }
+            },
+            // Step 4: Project the desired fields (including the user info)
+            {
+                $project: {
+                    title: 1,
+                    description: 1,
+                    status: 1,
+                    createdAt: 1,
+                    userId: 1,
+                    updatedAt: 1,
+                    voteCount: 1,
+                    user: {
+                        _id: "$user._id",
+                        email: "$user.email"
+                    }
+                }
+            }
+        ]);
 
-        // Add vote count to each idea
-        const ideasWithVotes = await Promise.all(
-            ideas.map(async (idea) => {
-                const voteCount = await Vote.countDocuments({ ideaId: idea._id }); // Count votes for the idea
-                return { ...idea, voteCount }; // Add vote count to the idea object
-            })
-        );
-
-        return ideasWithVotes;
+        return ideas;
     } catch (error) {
+        console.log(error)
         throw error;
     }
 }
+
+
 
 async function updateIdeaStatus(ideaId, status, userId, comment) {
     try {
