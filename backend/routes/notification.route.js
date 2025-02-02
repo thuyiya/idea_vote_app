@@ -50,7 +50,43 @@ router.get('/:userId', authMiddleware.authenticateToken, notificationController.
  */
 router.put('/:notificationId/status', authMiddleware.authenticateToken, notificationController.updateNotificationStatus);
 
-
+/**
+ * @swagger
+ * /api/notifications/:
+ *   get:
+ *     summary: Get all notifications
+ *     description: Fetch all notifications in the system.
+ *     tags:
+ *       - Notifications
+ *     responses:
+ *       200:
+ *         description: List of all notifications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   message:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *                   userId:
+ *                     type: string
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
+ *       400:
+ *         description: Error fetching notifications
+ *       401:
+ *         description: Unauthorized
+ */
 router.get('/', authMiddleware.authenticateToken, notificationController.getAllNotification);
 
 module.exports = router;

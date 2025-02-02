@@ -94,7 +94,6 @@ router.get('/all', authMiddleware.authenticateToken, ideaController.getAllIdeas)
  */
 router.put('/:ideaId/status', authMiddleware.authenticateToken, ideaController.updateIdeaStatus);
 
-
 /**
  * @swagger
  * /api/ideas/{id}:
@@ -127,9 +126,76 @@ router.put('/:ideaId/status', authMiddleware.authenticateToken, ideaController.u
  */
 router.delete('/:id', authMiddleware.authenticateToken, ideaController.removeIdea);
 
-
+/**
+ * @swagger
+ * /api/ideas/{id}:
+ *   put:
+ *     summary: Update an idea
+ *     description: Allows users to update an existing idea's details.
+ *     tags:
+ *       - Ideas
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         description: ID of the idea to update
+ *         required: true
+ *         schema:
+ *           type: string
+ *           example: "617f0ef3c0a44f0b4e2338a9"
+ *       - in: body
+ *         name: idea
+ *         description: Updated idea information
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             title:
+ *               type: string
+ *               example: "Updated Idea Title"
+ *             description:
+ *               type: string
+ *               example: "Updated description of the idea"
+ *     responses:
+ *       200:
+ *         description: Idea updated successfully
+ *         schema:
+ *           type: object
+ *           properties:
+ *             message:
+ *               type: string
+ *               example: "Idea updated successfully"
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized Access
+ */
 router.put('/:id', authMiddleware.authenticateToken, ideaController.updateIdea);
 
+/**
+ * @swagger
+ * /api/ideas/all/{status}:
+ *   get:
+ *     summary: Get ideas by status
+ *     description: Fetches all ideas with a specific status (e.g., approved, rejected, neutral).
+ *     tags:
+ *       - Ideas
+ *     parameters:
+ *       - in: path
+ *         name: status
+ *         description: Status of ideas to fetch (Approve, Reject, Neutral)
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [Approve, Reject, Neutral]
+ *           example: "Approve"
+ *     responses:
+ *       200:
+ *         description: List of ideas by status
+ *       400:
+ *         description: Error fetching ideas
+ *       401:
+ *         description: Unauthorized Access
+ */
 router.get('/all/:status', authMiddleware.authenticateToken, ideaController.getIdeasByStatus);
 
 module.exports = router;

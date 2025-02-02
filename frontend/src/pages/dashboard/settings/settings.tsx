@@ -1,14 +1,23 @@
 import { useState } from "react";
 import { Box, Typography, Button, Switch, FormControlLabel, Card, CardContent } from "@mui/material";
 import { Brightness4, Brightness7, ExitToApp } from "@mui/icons-material";
+import { logout } from "../../../utils/userService";
 
-const SettingsPage = ({ onLogout }: { onLogout: () => void }) => {
+const SettingsPage = () => {
     const [darkMode, setDarkMode] = useState(false);
 
     const handleThemeChange = () => {
         setDarkMode(!darkMode);
         // Add theme toggle logic here (e.g., update context or state in the app)
     };
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            alert(error)
+        }
+    }
 
     return (
         <Box sx={{ maxWidth: 400, margin: "auto", mt: 5 }}>
@@ -34,7 +43,7 @@ const SettingsPage = ({ onLogout }: { onLogout: () => void }) => {
                             variant="contained"
                             color="error"
                             startIcon={<ExitToApp />}
-                            onClick={onLogout}
+                            onClick={handleLogout}
                             fullWidth
                         >
                             Logout

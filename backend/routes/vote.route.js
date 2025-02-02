@@ -12,27 +12,31 @@ const router = express.Router();
  *     description: Allows an authenticated user to vote for an idea. Requires a valid JWT token.
  *     tags:
  *       - Vote
- *     parameters:
- *       - in: body
- *         name: ideaId
- *         description: ID of the idea to vote for
- *         required: true
- *         schema:
- *           type: string
- *           example: "617f0ef3c0a44f0b4e2338a9"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               ideaId:
+ *                 type: string
+ *                 description: ID of the idea to vote for
+ *                 example: "617f0ef3c0a44f0b4e2338a9"
  *     responses:
  *       201:
  *         description: Vote created successfully
- *         schema:
- *           type: object
- *           properties:
- *             message:
- *               type: string
- *               example: "Vote created successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Vote created successfully"
  *       401:
  *         description: Unauthorized Access
  */
-
 router.post('/create', authMiddleware.authenticateToken, voteController.createVote);
 
 /**
@@ -54,21 +58,22 @@ router.post('/create', authMiddleware.authenticateToken, voteController.createVo
  *     responses:
  *       200:
  *         description: Total number of votes for the idea
- *         schema:
- *           type: object
- *           properties:
- *             ideaId:
- *               type: string
- *               example: "617f0ef3c0a44f0b4e2338a9"
- *             votesCount:
- *               type: integer
- *               example: 25
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ideaId:
+ *                   type: string
+ *                   example: "617f0ef3c0a44f0b4e2338a9"
+ *                 votesCount:
+ *                   type: integer
+ *                   example: 25
  *       404:
  *         description: Idea not found
  *       401:
  *         description: Unauthorized Access
  */
-
 router.get('/:ideaId/votes', authMiddleware.authenticateToken, voteController.getVotesForIdea);
 
 /**
@@ -90,21 +95,114 @@ router.get('/:ideaId/votes', authMiddleware.authenticateToken, voteController.ge
  *     responses:
  *       200:
  *         description: Vote removed successfully
- *         schema:
- *           type: object
- *           properties:
- *             message:
- *               type: string
- *               example: "Vote removed successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Vote removed successfully"
  *       404:
  *         description: Vote not found
  *       401:
  *         description: Unauthorized Access
  */
-
 router.delete('/remove/:id', authMiddleware.authenticateToken, voteController.removeVote);
+
+/**
+ * @swagger
+ * /api/votes/all:
+ *   get:
+ *     summary: Get all votes
+ *     description: Fetches a list of all votes from the system.
+ *     tags:
+ *       - Vote
+ *     responses:
+ *       200:
+ *         description: List of all votes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   userId:
+ *                     type: string
+ *                   ideaId:
+ *                     type: string
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized Access
+ */
 router.get('/all', authMiddleware.authenticateToken, voteController.getAllVotes);
+
+/**
+ * @swagger
+ * /api/votes:
+ *   get:
+ *     summary: Get votes made by the authenticated user
+ *     description: Fetches the list of votes made by the currently authenticated user.
+ *     tags:
+ *       - Vote
+ *     responses:
+ *       200:
+ *         description: List of votes made by the authenticated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   ideaId:
+ *                     type: string
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized Access
+ */
 router.get('/', authMiddleware.authenticateToken, voteController.getMyVotes);
+
+/**
+ * @swagger
+ * /api/votes/best:
+ *   get:
+ *     summary: Get the best ideas by votes
+ *     description: Fetches the ideas with the highest number of votes.
+ *     tags:
+ *       - Vote
+ *     responses:
+ *       200:
+ *         description: List of best ideas by votes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   ideaId:
+ *                     type: string
+ *                   votesCount:
+ *                     type: integer
+ *       401:
+ *         description: Unauthorized Access
+ */
 router.get('/best', authMiddleware.authenticateToken, voteController.getBestIdeasByVotes);
 
 module.exports = router;
