@@ -67,20 +67,30 @@ async function getAllIdeas() {
                     }
                 }
             },
-            // Step 4: Project the desired fields (including the user info)
+            // Step 4: Add comments to each idea by looking up the "IdeaComment" collection
+            {
+                $lookup: {
+                    from: "ideacomments", // The name of the IdeaComment collection in MongoDB
+                    localField: "_id",  // The field in the Idea collection to join on
+                    foreignField: "ideaId",  // The field in the IdeaComment collection to match
+                    as: "comments"  // This will return an array of comments for each idea
+                }
+            },
+            // Step 5: Project the desired fields (including the user info and comments)
             {
                 $project: {
                     title: 1,
                     description: 1,
                     status: 1,
                     createdAt: 1,
-                    userId: 1,
                     updatedAt: 1,
+                    userId: 1,
                     voteCount: 1,
                     user: {
                         _id: "$user._id",
                         email: "$user.email"
-                    }
+                    },
+                    comments: 1  // Include the comments array
                 }
             }
         ]);
@@ -91,6 +101,7 @@ async function getAllIdeas() {
         throw error;
     }
 }
+
 
 
 

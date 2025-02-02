@@ -24,10 +24,14 @@ import {
     Alert,
     AlertColor,
     AlertPropsColorOverrides,
+    Popover,
+    Typography,
+    List,
+    ListItem,
 } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
-import { Idea, IdeaStatus } from "../../types";
+import { Comment, Idea, IdeaStatus } from "../../types";
 import { fetchIdeas, createIdea, updateIdea, deleteIdea, updateIdeaStatus } from "../../utils/ideaService";
 import { Star, StarBorder } from "@mui/icons-material";
 import { createVote, fetchMyVotes } from "../../utils/voteService";
@@ -44,8 +48,11 @@ const IdeaTable = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [voteIds, setVoteIds] = useState<string[]>([])
     const [openSnackbar, setOpenSnackbar] = useState({ open: false, message: "", severity: "success" });
+    const [anchorCommentEl, setAnchorCommentEl] = useState<null | HTMLElement>(null);
+    const [selectedComments, setSelectedComments] = useState<Comment[]>([]);
 
     const openMenuStatus = Boolean(anchorEl);
+    const openComment = Boolean(anchorCommentEl);
 
     const { register, handleSubmit, reset } = useForm<Idea>();
 
@@ -67,6 +74,18 @@ const IdeaTable = () => {
         fetchVotes();
         loadIdeas();
     }, []);
+
+    const handleCommentClick = (event: React.MouseEvent<HTMLButtonElement>, comments?: Comment[]) => {
+        if (comments && comments.length > 0) {
+            setAnchorCommentEl(event.currentTarget);
+            setSelectedComments(comments);
+        }
+    };
+
+    const handleCommentClose = () => {
+        setAnchorCommentEl(null);
+        setSelectedComments([]);
+    };
 
     const fetchVotes = async () => {
         try {
@@ -169,7 +188,7 @@ const IdeaTable = () => {
         idea.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    console.log("editingIdea ", editingIdea);
+    const id = open ? 'popover-comments' : undefined;
 
     return (
         <Box>
@@ -203,6 +222,7 @@ const IdeaTable = () => {
                                 <TableCell>Title</TableCell>
                                 <TableCell>Description</TableCell>
                                 <TableCell>Created At</TableCell>
+                                <TableCell>Comment</TableCell>
                                 <TableCell>Status</TableCell>
                                 <TableCell>Email</TableCell>
                                 <TableCell>Votes Count</TableCell>
@@ -216,6 +236,41 @@ const IdeaTable = () => {
                                     <TableCell>{idea.title}</TableCell>
                                     <TableCell>{idea.description}</TableCell>
                                     <TableCell>{idea.createdAt}</TableCell>
+                                    <TableCell>
+                                        <Chip component={"button"} onClick={(event) => handleCommentClick(event, idea?.comments)} label={`View ${idea?.comments?.length || ""}`} />
+                                        <Popover
+                                            id={id}
+                                            open={openComment}
+                                            anchorEl={anchorCommentEl}
+                                            onClose={handleCommentClose}
+                                            anchorOrigin={{
+                                                vertical: 'bottom',
+                                                horizontal: 'center',
+                                            }}
+                                            transformOrigin={{
+                                                vertical: 'top',
+                                                horizontal: 'center',
+                                            }}
+                                        >
+                                            <div style={{ padding: '10px', width: '300px' }}>
+                                                <Typography variant="h6" gutterBottom>
+                                                    Comments
+                                                </Typography>
+                                                <List>
+                                                    {selectedComments.map((comment) => (
+                                                        <ListItem key={comment._id}>
+                                                            <Typography variant="body2" color="textSecondary">
+                                                                {comment.comment} <br />
+                                                                <span style={{ fontSize: '0.8em' }}>
+                                                                    - {comment.createdAt}
+                                                                </span>
+                                                            </Typography>
+                                                        </ListItem>
+                                                    ))}
+                                                </List>
+                                            </div>
+                                        </Popover>
+                                        </TableCell>
                                     <TableCell>
                                         <Chip
                                             component="button"

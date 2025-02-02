@@ -4,6 +4,12 @@ enum IdeaStatus {
     Neutral = 'Neutral'
 }
 
+type Comment = {
+    _id: string,
+    comment: string;
+    createdAt: string
+}
+
 type Idea = {
     _id: string;
     title: string;
@@ -18,6 +24,7 @@ type Idea = {
     updatedAt: Date;
     approvedUserIds: string[];
     voteCount?: number;
+    comments?: Comment[]
 };
 
 type User = {
@@ -41,5 +48,5 @@ type Notification = {
     status: "Read" | "Not-Read";
 };
 
-export type { Idea, User, Notification }
+export type { Idea, User, Notification, Comment }
 export { IdeaStatus }
