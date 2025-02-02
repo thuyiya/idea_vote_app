@@ -26,6 +26,7 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { Avatar, Badge, Menu, MenuItem, Popover } from '@mui/material';
 import { NotificationsList } from '../components/NotificationsList';
 import { Logout } from '@mui/icons-material';
+import { logout } from '../utils/api';
 
 const drawerWidth = 240;
 
@@ -143,10 +144,15 @@ export default function MiniDrawer() {
         setAnchorElNotification(null);
     };
 
-    const logout = () => {
-        handleProfileMenuClose()
-        localStorage.clear();
-        navigate("/login")
+    const handleLogout = async () => {
+       try {
+           await logout()
+           handleProfileMenuClose()
+           localStorage.clear();
+           navigate("/login")
+       } catch (error) {
+        console.log(error)
+       }
     }
 
     const renderProfileMenu = (
@@ -183,7 +189,7 @@ export default function MiniDrawer() {
                 </ListItemIcon>
                 My Account
             </MenuItem>
-            <MenuItem onClick={logout}>
+            <MenuItem onClick={handleLogout}>
                 <ListItemIcon>
                     <Logout fontSize="small" />
                 </ListItemIcon>

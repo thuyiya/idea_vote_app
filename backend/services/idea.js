@@ -106,7 +106,7 @@ async function updateIdeaStatus(ideaId, status, userId, comment) {
             throw new Error("Idea not found");
         }
 
-        const ideaComment = new IdeaComment.create({
+        const ideaComment = new IdeaComment({
             userId,
             ideaId,
             comment: comment || "NO COMMENT ADDED"
@@ -119,6 +119,35 @@ async function updateIdeaStatus(ideaId, status, userId, comment) {
             userId: updatedIdea.userId, // Notify the user who created the idea
             title: "Idea Status Updated",
             description: `Your idea titled '${updatedIdea.title}' status has been updated to '${status}'.`,
+            ideaId: updatedIdea._id,
+            status: 'Not-Read',
+        });
+
+        await notification.save();
+
+        return updatedIdea;
+    } catch (error) {
+        console.log("error ", error)
+        throw error;
+    }
+}
+
+async function updateIdea(ideaId, { title, description }) {
+    try {
+        if (!title || !description) {
+            throw new Error("Invalid update");
+        }
+
+        const updatedIdea = await Idea.findByIdAndUpdate(ideaId, { title, description }, { new: true });
+        if (!updatedIdea) {
+            throw new Error("Idea not found");
+        }
+
+        // Create notification for the relevant user
+        const notification = new Notification({
+            userId: updatedIdea.userId, // Notify the user who created the idea
+            title: "Idea Updated",
+            description: `Idea titled '${updatedIdea.title}' has been updated to '${description}'.`,
             ideaId: updatedIdea._id,
             status: 'Not-Read',
         });
@@ -149,5 +178,6 @@ module.exports = {
     getAllIdeas,
     createIdea,
     removeIdea,
-    updateIdeaStatus
+    updateIdeaStatus,
+    updateIdea
 }

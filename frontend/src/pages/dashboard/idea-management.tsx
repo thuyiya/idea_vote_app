@@ -15,15 +15,16 @@ import {
     TableHead,
     TableRow,
     Paper,
-    Select,
-    MenuItem,
     IconButton,
     CircularProgress,
+    Chip,
+    MenuItem,
+    Menu,
 } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
-import { Idea } from "../../types";
-import { fetchIdeas, createIdea, updateIdea, deleteIdea } from "../../utils/ideaService";
+import { Idea, IdeaStatus } from "../../types";
+import { fetchIdeas, createIdea, updateIdea, deleteIdea, updateIdeaStatus } from "../../utils/ideaService";
 
 const IdeaTable = () => {
     const [ideas, setIdeas] = useState<Idea[]>([]);
@@ -31,8 +32,15 @@ const IdeaTable = () => {
     const [open, setOpen] = useState(false);
     const [editingIdea, setEditingIdea] = useState<Idea | null>(null);
     const [loading, setLoading] = useState(false);
+    const [openCommentDialog, setOpenCommentDialog] = useState(false);
+    const [comment, setComment] = useState("");
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+    const openMenuStatus = Boolean(anchorEl);
 
     const { register, handleSubmit, reset } = useForm<Idea>();
+
+    const userRole = localStorage.getItem('role')
 
     // Fetch all ideas from API
     useEffect(() => {
@@ -51,6 +59,22 @@ const IdeaTable = () => {
         loadIdeas();
     }, []);
 
+    const handleStatusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        if (userRole === 'staff' || userRole === 'admin') {
+            setAnchorEl(event.currentTarget);
+        }
+    };
+    
+    const handleStatus = (idea: Idea, status: IdeaStatus) => {
+        setEditingIdea({ ...idea, status })
+        setOpenCommentDialog(true);
+        handleStatusClose()
+    };
+
+    const handleStatusClose = () => {
+        setAnchorEl(null);
+    };
+
     // Open modal for Create/Edit
     const handleOpen = (idea: Idea | null) => {
         setEditingIdea(idea);
@@ -62,6 +86,20 @@ const IdeaTable = () => {
         setOpen(false);
         setEditingIdea(null);
         reset();
+    };
+
+    const handleCommentSubmit = async () => {
+        if (comment && editingIdea?._id) {
+            try {
+                await updateIdeaStatus(editingIdea?._id, editingIdea?.status, comment );
+                setIdeas(ideas.map((idea) => (idea._id === editingIdea?._id ? { ...idea, status: editingIdea?.status, comment } : idea)));
+            } catch (error) {
+                console.error("Error updating status:", error);
+            }
+            setEditingIdea(null)
+            setOpenCommentDialog(false);
+            setComment(""); // Clear the comment input after submission
+        }
     };
 
     // Handle Create or Edit Idea
@@ -123,7 +161,8 @@ const IdeaTable = () => {
                                 <TableCell>Description</TableCell>
                                 <TableCell>Created At</TableCell>
                                 <TableCell>Status</TableCell>
-                                <TableCell>User ID</TableCell>
+                                <TableCell>Email</TableCell>
+                                <TableCell>Votes</TableCell>
                                 <TableCell>Actions</TableCell>
                             </TableRow>
                         </TableHead>
@@ -133,8 +172,39 @@ const IdeaTable = () => {
                                     <TableCell>{idea.title}</TableCell>
                                     <TableCell>{idea.description}</TableCell>
                                     <TableCell>{idea.createdAt}</TableCell>
-                                    <TableCell>{idea.status}</TableCell>
-                                    <TableCell>{idea.userId}</TableCell>
+                                    <TableCell>
+                                        <Chip
+                                            component="button" 
+                                            label={idea.status}
+                                            color={
+                                                idea.status === IdeaStatus.Reject
+                                                    ? "error"
+                                                    : idea.status === IdeaStatus.Approve
+                                                        ? "success"
+                                                        : "default"
+                                            }
+                                            sx={{
+                                                fontWeight: "bold",
+                                                textTransform: "capitalize",
+                                            }}
+                                            onClick={handleStatusClick}
+                                        />
+                                        <Menu
+                                            id="status-menu"
+                                            anchorEl={anchorEl}
+                                            open={openMenuStatus}
+                                            onClose={handleStatusClose}
+                                            MenuListProps={{
+                                                'aria-labelledby': 'basic-button',
+                                            }}
+                                        >
+                                            <MenuItem onClick={() => handleStatus(idea, IdeaStatus.Approve)}>{IdeaStatus.Approve}</MenuItem>
+                                            <MenuItem onClick={() => handleStatus(idea, IdeaStatus.Reject)}>{IdeaStatus.Reject}</MenuItem>
+                                            <MenuItem onClick={() => handleStatus(idea, IdeaStatus.Neutral)}>{IdeaStatus.Neutral}</MenuItem>
+                                        </Menu>
+                                    </TableCell>
+                                    <TableCell>{idea.voteCount}</TableCell>
+                                    <TableCell>{idea.user?.email}</TableCell>
                                     <TableCell>
                                         <IconButton onClick={() => handleOpen(idea)}>
                                             <Edit color="primary" />
@@ -157,12 +227,6 @@ const IdeaTable = () => {
                     <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
                         <TextField label="Title" {...register("title", { required: true })} fullWidth />
                         <TextField label="Description" {...register("description", { required: true })} fullWidth />
-                        <TextField label="User ID" {...register("userId", { required: true })} fullWidth />
-                        <Select {...register("status", { required: true })} fullWidth defaultValue="Neutral">
-                            <MenuItem value="Approve">Approve</MenuItem>
-                            <MenuItem value="Reject">Reject</MenuItem>
-                            <MenuItem value="Neutral">Neutral</MenuItem>
-                        </Select>
                     </Box>
                 </DialogContent>
                 <DialogActions>
@@ -171,6 +235,30 @@ const IdeaTable = () => {
                     </Button>
                     <Button onClick={handleSubmit(onSubmit)} variant="contained" color="primary">
                         {editingIdea ? "Update" : "Create"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Comment Dialog for Status Update */}
+            <Dialog open={openCommentDialog} onClose={() => setOpenCommentDialog(false)} maxWidth="md" fullWidth>
+                <DialogTitle>Provide a Comment for {editingIdea?.title}</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        label="Comment"
+                        variant="outlined"
+                        fullWidth
+                        multiline
+                        rows={4}
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenCommentDialog(false)} color="secondary">
+                        Cancel
+                    </Button>
+                    <Button onClick={() => handleCommentSubmit()} variant="contained" color="primary">
+                        Submit Comment
                     </Button>
                 </DialogActions>
             </Dialog>

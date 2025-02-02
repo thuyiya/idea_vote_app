@@ -1,8 +1,14 @@
+enum IdeaStatus {
+    Reject = 'Rejected',
+    Approve = 'Approved',
+    Neutral = 'Neutral'
+}
+
 type Idea = {
     _id: string;
     title: string;
     description: string;
-    status: "Reject" | "Approve" | "Nural";
+    status: IdeaStatus;
     userId: string;
     user?: {
         _id: string,
@@ -24,3 +30,4 @@ type User = {
 };
 
 export type { Idea, User }
+export { IdeaStatus }

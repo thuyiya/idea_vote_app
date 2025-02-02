@@ -127,4 +127,7 @@ router.put('/:ideaId/status', authMiddleware.authenticateToken, ideaController.u
  */
 router.delete('/:id', authMiddleware.authenticateToken, ideaController.removeIdea);
 
+
+router.put('/:id', authMiddleware.authenticateToken, ideaController.updateIdea);
+
 module.exports = router;

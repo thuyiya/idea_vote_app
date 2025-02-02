@@ -44,10 +44,22 @@ const updateIdeaStatus = async (req, res) => {
     }
 };
 
+const updateIdea = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const updatedIdea = await ideaService.updateIdea(id, req.body);
+        res.status(200).json({ message: "Idea status updated", idea: updatedIdea });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 
 module.exports = {
     createIdea,
     getAllIdeas,
     removeIdea,
-    updateIdeaStatus
+    updateIdeaStatus,
+    updateIdea
 }

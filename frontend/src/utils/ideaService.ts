@@ -13,8 +13,12 @@ export const createIdea = async (idea: { title: string; description: string; use
 };
 
 // Update an existing idea
-export const updateIdea = async (ideaId: string, idea: { title: string; description: string; status: string }) => {
-    return axiosInstance.put(`${API_URL}/${ideaId}/status`, idea);
+export const updateIdeaStatus = async (ideaId: string, status: string, comment: string) => {
+    return axiosInstance.put(`${API_URL}/${ideaId}/status`, { status, comment });
+};
+
+export const updateIdea = async (ideaId: string, idea: { title: string; description: string }) => {
+    return axiosInstance.put(`${API_URL}/${ideaId}`, idea);
 };
 
 // Delete an idea

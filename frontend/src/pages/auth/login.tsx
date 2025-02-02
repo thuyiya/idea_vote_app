@@ -64,6 +64,7 @@ export default function LoginPage() {
 
             // Save the token to localStorage
             localStorage.setItem('token', response.data.token);
+            localStorage.setItem('role', response.data.role);
 
             navigate("/", { replace: true });
         } catch (error) {
