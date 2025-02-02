@@ -1,3 +1,4 @@
+import { IdeaStatus } from "../types";
 import axiosInstance from "./axiosInstance";
 
 const API_URL = "/ideas";
@@ -5,6 +6,10 @@ const API_URL = "/ideas";
 // Fetch all ideas
 export const fetchIdeas = async () => {
     return axiosInstance.get(`${API_URL}/all`);
+};
+
+export const fetchIdeasByStatus = async (status: IdeaStatus) => {
+    return axiosInstance.get(`${API_URL}/all/${status}`);
 };
 
 // Create a new idea

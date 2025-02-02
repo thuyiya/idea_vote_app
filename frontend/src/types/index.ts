@@ -25,9 +25,21 @@ type User = {
     name: string;
     email: string;
     username: string;
+    password?: string; 
     role: string;
     createdAt: string;
 };
 
-export type { Idea, User }
+type Notification = {
+    _id: string;
+    title: string;
+    description: string;
+    sender: string;
+    ideaId?: string;
+    voteId?: string;
+    createdAt: string;
+    status: "Read" | "Not-Read";
+};
+
+export type { Idea, User, Notification }
 export { IdeaStatus }

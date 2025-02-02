@@ -172,12 +172,20 @@ async function removeIdea(ideaId, userId) {
     }
 }
 
-
+async function getIdeasByStatus(status) {
+    try {
+        const idea = await Idea.find({ status });
+        return idea;
+    } catch (error) {
+        throw error;
+    }
+}
 
 module.exports = {
     getAllIdeas,
     createIdea,
     removeIdea,
     updateIdeaStatus,
-    updateIdea
+    updateIdea,
+    getIdeasByStatus
 }

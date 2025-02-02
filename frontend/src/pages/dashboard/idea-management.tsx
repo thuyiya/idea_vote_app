@@ -203,8 +203,8 @@ const IdeaTable = () => {
                                             <MenuItem onClick={() => handleStatus(idea, IdeaStatus.Neutral)}>{IdeaStatus.Neutral}</MenuItem>
                                         </Menu>
                                     </TableCell>
-                                    <TableCell>{idea.voteCount}</TableCell>
                                     <TableCell>{idea.user?.email}</TableCell>
+                                    <TableCell>{idea.voteCount}</TableCell>
                                     <TableCell>
                                         <IconButton onClick={() => handleOpen(idea)}>
                                             <Edit color="primary" />

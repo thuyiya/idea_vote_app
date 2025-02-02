@@ -103,5 +103,7 @@ router.get('/:ideaId/votes', authMiddleware.authenticateToken, voteController.ge
  */
 
 router.delete('/:id', authMiddleware.authenticateToken, voteController.removeVote);
+router.get('/all', authMiddleware.authenticateToken, voteController.getAllVotes);
+router.get('/best', authMiddleware.authenticateToken, voteController.getBestIdeasByVotes);
 
 module.exports = router;

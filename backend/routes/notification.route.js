@@ -50,4 +50,7 @@ router.get('/:userId', authMiddleware.authenticateToken, notificationController.
  */
 router.put('/:notificationId/status', authMiddleware.authenticateToken, notificationController.updateNotificationStatus);
 
+
+router.get('/', authMiddleware.authenticateToken, notificationController.getAllNotification);
+
 module.exports = router;

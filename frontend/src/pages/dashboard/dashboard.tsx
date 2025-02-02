@@ -14,31 +14,34 @@ import {
 } from "@mui/material";
 import { Chart, ChartData, registerables } from "chart.js";
 import { Pie } from "react-chartjs-2";
+import { getAllEmployees, getLastMonthEmployees } from "../../utils/userService";
+import { fetchIdeas, fetchIdeasByStatus } from "../../utils/ideaService";
+import { IdeaStatus } from "../../types";
+import { fetchBestVoteIdeas, fetchVotes } from "../../utils/voteService";
 
 Chart.register(...registerables);
+
+type DashboardData = {
+    employees: number;
+    newEmployeesThisMonth: number;
+    totalIdeas: number;
+    approvedIdeas: number;
+    rejectedIdeas: number;
+    voteCount: number;
+    topIdeas: { title: string; votes: number }[];  // Array of top ideas, each with a title and votes
+};
 
 const Dashboard = () => {
     const chartRef = useRef<Chart<"pie"> | null>(null);
 
-    const [data] = useState({
-        employees: 100,
-        newEmployeesThisMonth: 10,
-        totalIdeas: 50,
-        approvedIdeas: 30,
-        rejectedIdeas: 20,
-        voteCount: 200,
-        topIdeas: [
-            { title: "Idea 1", votes: 15 },
-            { title: "Idea 2", votes: 12 },
-            { title: "Idea 3", votes: 10 },
-            { title: "Idea 4", votes: 8 },
-            { title: "Idea 5", votes: 6 },
-        ],
-        trendingIdeas: [
-            { title: "Trending Idea 1", votes: 20 },
-            { title: "Trending Idea 2", votes: 18 },
-            { title: "Trending Idea 3", votes: 17 },
-        ],
+    const [data, setData] = useState<DashboardData>({
+        employees: 0,
+        newEmployeesThisMonth: 0,
+        totalIdeas: 0,
+        approvedIdeas: 0,
+        rejectedIdeas: 0,
+        voteCount: 0,
+        topIdeas: []
     });
 
     const pieData: ChartData<"pie"> = {
@@ -51,13 +54,108 @@ const Dashboard = () => {
         ],
     };
 
+    const fetchEmployeeCount = async () => {
+        try {
+            const employeeData = await getAllEmployees();
+            setData((prevData) => ({
+                ...prevData,
+                employees: employeeData.data.length,  // Assuming the API returns an array of employees
+            }));
+        } catch (error) {
+            console.error("Error fetching employee data:", error);
+        }
+    };
+
+    const fetchLastMothEmployeeCount = async () => {
+        try {
+            const employeeData = await getLastMonthEmployees();
+            setData((prevData) => ({
+                ...prevData,
+                newEmployeesThisMonth: employeeData.data.length,  // Assuming the API returns an array of employees
+            }));
+        } catch (error) {
+            console.error("Error fetching employee data:", error);
+        }
+    };
+
+    const fetchAllIdeas = async () => {
+        try {
+            const ideas = await fetchIdeas();
+            setData((prevData) => ({
+                ...prevData,
+                totalIdeas: ideas.data.length,  // Assuming the API returns an array of employees
+            }));
+        } catch (error) {
+            console.error("Error fetching employee data:", error);
+        }
+    };
+
+    const fetchApprovedIdeas = async () => {
+        try {
+            const ideas = await fetchIdeasByStatus(IdeaStatus.Approve);
+            setData((prevData) => ({
+                ...prevData,
+                approvedIdeas: ideas.data.length,  // Assuming the API returns an array of employees
+            }));
+        } catch (error) {
+            console.error("Error fetching employee data:", error);
+        }
+    };
+
+    const fetchRejectIdeas = async () => {
+        try {
+            const ideas = await fetchIdeasByStatus(IdeaStatus.Reject);
+            setData((prevData) => ({
+                ...prevData,
+                rejectedIdeas: ideas.data.length,  // Assuming the API returns an array of employees
+            }));
+        } catch (error) {
+            console.error("Error fetching employee data:", error);
+        }
+    };
+
+    const fetchAllVotes = async () => {
+        try {
+            const votes = await fetchVotes();
+            setData((prevData) => ({
+                ...prevData,
+                voteCount: votes.data.length,  // Assuming the API returns an array of employees
+            }));
+        } catch (error) {
+            console.error("Error fetching employee data:", error);
+        }
+    };
+
+    const fetchAllBestVoteIdeas = async () => {
+        try {
+            const votes = await fetchBestVoteIdeas();
+
+            console.log("votes.data ", votes.data)
+
+            setData((prevData) => ({
+                ...prevData,
+                topIdeas: votes.data,  // Assuming the API returns an array of employees
+            }));
+        } catch (error) {
+            console.error("Error fetching employee data:", error);
+        }
+    };
+
     useEffect(() => {
-        return () => {
-            if (chartRef.current) {
-                chartRef.current.destroy();
-            }
-        };
-    }, []);
+        fetchEmployeeCount();
+        fetchLastMothEmployeeCount();
+        fetchAllIdeas()
+        fetchApprovedIdeas()
+        fetchRejectIdeas()
+        fetchAllVotes()
+        fetchAllBestVoteIdeas()
+    }, []); // Empty dependency array ensures that this effect runs only once
+
+    useEffect(() => {
+        if (chartRef.current) {
+            chartRef.current.update();  // Update chart when data changes
+        }
+    }, [data]);
 
     return (
         <Box sx={{ padding: 3 }}>
@@ -66,7 +164,7 @@ const Dashboard = () => {
                 {/* Employee Summary */}
                 <Box sx={{ flex: 1, minWidth: "280px" }}>
                     <Card>
-                        <CardContent sx={{ height: 280}}>
+                        <CardContent sx={{ height: 280 }}>
                             <Typography variant="h6">Employees</Typography>
                             <Typography variant="h4">{data.employees}</Typography>
                             <Typography variant="body2" color="text.secondary">
@@ -91,7 +189,7 @@ const Dashboard = () => {
                 {/* Vote Summary */}
                 <Box sx={{ flex: 1, minWidth: "280px" }}>
                     <Card>
-                        <CardContent sx={{ height: 280}}>
+                        <CardContent sx={{ height: 280 }}>
                             <Typography variant="h6">Votes</Typography>
                             <Typography variant="h4">{data.voteCount}</Typography>
                             <Typography variant="body2">Top 5 Ideas</Typography>
@@ -105,15 +203,17 @@ const Dashboard = () => {
                 </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', mt: 4}}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 4 }}>
                 <Box sx={{ textAlign: "center" }}>
                     <Typography variant="h6">Idea Approval Status</Typography>
                     <Box sx={{ width: 300, margin: "auto" }}>
-                        <Pie data={pieData} ref={chartRef} />
+                        {data && (
+                            <Pie data={pieData} ref={chartRef} />
+                        )}
                     </Box>
                 </Box>
 
-                <Box sx={{ width: '100%', pl: 2}}>
+                <Box sx={{ width: '100%', pl: 2 }}>
                     <Typography variant="h6">Trending Ideas</Typography>
                     <TableContainer component={Paper}>
                         <Table>
@@ -124,7 +224,7 @@ const Dashboard = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {data.trendingIdeas.map((idea, index) => (
+                                {data.topIdeas.map((idea, index) => (
                                     <TableRow key={index}>
                                         <TableCell>{idea.title}</TableCell>
                                         <TableCell>{idea.votes}</TableCell>

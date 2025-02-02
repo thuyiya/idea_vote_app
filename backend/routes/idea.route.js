@@ -130,4 +130,6 @@ router.delete('/:id', authMiddleware.authenticateToken, ideaController.removeIde
 
 router.put('/:id', authMiddleware.authenticateToken, ideaController.updateIdea);
 
+router.get('/all/:status', authMiddleware.authenticateToken, ideaController.getIdeasByStatus);
+
 module.exports = router;

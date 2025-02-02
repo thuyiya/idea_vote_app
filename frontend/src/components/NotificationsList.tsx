@@ -6,87 +6,36 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
-import { ListItemButton, Box } from "@mui/material";
-import { Lightbulb, HowToVote } from "@mui/icons-material"; // Icons for Idea & Vote notifications
+import { ListItemButton } from "@mui/material";
+import { Lightbulb, HowToVote } from "@mui/icons-material";
+import { Notification } from "../types";
+import moment from "moment";
 
-// Notification type with category and icon
-type Notification = {
-    id: string;
-    title: string;
-    message: string;
-    sender: string;
-    avatar: string;
-    type: "Idea" | "Vote";
-};
 
-// Sample notifications categorized
-const notifications: Notification[] = [
-    {
-        id: "1",
-        title: "New Idea Submitted",
-        message: "John Doe submitted a new idea: 'AI-Powered Task Manager'",
-        sender: "John Doe",
-        avatar: "/static/images/avatar/1.jpg",
-        type: "Idea",
-    },
-    {
-        id: "2",
-        title: "Idea Approved",
-        message: "The idea 'Smart Office Automation' was approved!",
-        sender: "HR Team",
-        avatar: "/static/images/avatar/2.jpg",
-        type: "Idea",
-    },
-    {
-        id: "3",
-        title: "Vote Received",
-        message: "Your idea 'Eco-Friendly Workspaces' got 5 new votes!",
-        sender: "System",
-        avatar: "/static/images/avatar/3.jpg",
-        type: "Vote",
-    },
-    {
-        id: "4",
-        title: "Idea Rejected",
-        message: "The idea 'Open Office Concept' was rejected due to feasibility issues.",
-        sender: "Management",
-        avatar: "/static/images/avatar/4.jpg",
-        type: "Idea",
-    },
-    {
-        id: "5",
-        title: "New Vote Cast",
-        message: "Sarah voted for the idea 'Remote Work Enhancements'",
-        sender: "Sarah Lee",
-        avatar: "/static/images/avatar/5.jpg",
-        type: "Vote",
-    },
-];
+const NotificationsList = ({ onClose, notifications }: { onClose: () => void; notifications: Notification[] }) => {
 
-const NotificationsList = ({ onClose }: { onClose: () => void }) => {
     return (
         <List sx={{ width: "100%", maxWidth: 400, bgcolor: "background.paper" }}>
             {notifications.map((notification, index) => (
-                <React.Fragment key={notification.id}>
+                <React.Fragment key={notification._id}>
                     <ListItem disablePadding>
                         <ListItemButton onClick={onClose}>
                             <ListItemAvatar>
-                                <Avatar alt={notification.sender} src={notification.avatar} />
+                                <Avatar alt={notification.sender}>
+                                    {notification.ideaId ? (
+                                        <Lightbulb color="warning" sx={{ mr: 1 }} />
+                                    ) : (
+                                        <HowToVote color="primary" sx={{ mr: 1 }} />
+                                    )}
+                                </Avatar>
                             </ListItemAvatar>
                             <ListItemText
                                 primary={
-                                    <Box display="flex" alignItems="center">
-                                        {notification.type === "Idea" ? (
-                                            <Lightbulb color="warning" sx={{ mr: 1 }} />
-                                        ) : (
-                                            <HowToVote color="primary" sx={{ mr: 1 }} />
-                                        )}
-                                        {notification.title}
-                                    </Box>
+                                    <Typography>{notification.title}</Typography>
                                 }
                                 secondary={
                                     <Typography component="span" variant="body2" color="text.secondary">
-                                        {`${notification.sender} — ${notification.message}`}
+                                        {`${notification.description} — ${moment(notification.createdAt).format("LLLL")}`}
                                     </Typography>
                                 }
                             />

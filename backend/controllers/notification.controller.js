@@ -33,7 +33,18 @@ const updateNotificationStatus = async (req, res) => {
     }
 };
 
+const getAllNotification = async (req, res) => {
+    try {
+        const notifications = await Notification.find({});
+        res.status(200).json(notifications);
+    } catch (error) {
+        console.log(error)
+        res.status(400).json({ message: "Error fetching notification" });
+    }
+};
+
 module.exports = {
     getUserNotifications,
-    updateNotificationStatus
+    updateNotificationStatus,
+    getAllNotification
 };

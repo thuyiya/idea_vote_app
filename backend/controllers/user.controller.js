@@ -4,7 +4,7 @@ const createUser = async (req, res) => {
     try {
         const userData = req.body
         const user = await userService.createUser(userData);
-        res.status(201).json({user: user, message: "Successful"})
+        res.status(201).json(user)
     } catch (error) {
        res.status(400).json({ message: "Create user error"}) 
     }
@@ -19,7 +19,17 @@ const getAllUsers = async (req, res) => {
     }
 }
 
+const getThisMonthRegisteredEmployees = async (req, res) => {
+    try {
+        const users = await userService.getThisMonthRegisteredEmployees();
+        res.status(201).json(users)
+    } catch (error) {
+        res.status(400).json({ message: "get users error" })
+    }
+}
+
 module.exports = {
     createUser,
-    getAllUsers
+    getAllUsers,
+    getThisMonthRegisteredEmployees
 }

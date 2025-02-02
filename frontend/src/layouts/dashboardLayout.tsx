@@ -26,7 +26,9 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { Avatar, Badge, Menu, MenuItem, Popover } from '@mui/material';
 import { NotificationsList } from '../components/NotificationsList';
 import { Logout } from '@mui/icons-material';
-import { logout } from '../utils/api';
+import { logout } from '../utils/userService';
+import { Notification } from '../types';
+import { fetchNotification } from '../utils/notificationService';
 
 const drawerWidth = 240;
 
@@ -105,11 +107,12 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 export default function MiniDrawer() {
     const theme = useTheme();
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = React.useState(true);
     const navigate = useNavigate();
     const { mode, toggleTheme } = useThemeContext();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [anchorElNotification, setAnchorElNotification] = React.useState<HTMLButtonElement | null>(null);
+    const [notifications, setNotifications] = React.useState<Notification[]>([]);
 
     const isMenuOpen = Boolean(anchorEl);
     const isNotificationOpen = Boolean(anchorElNotification);
@@ -154,6 +157,20 @@ export default function MiniDrawer() {
         console.log(error)
        }
     }
+    React.useEffect(() => {
+        const loadNotifications = async () => {
+            try {
+                const response = await fetchNotification();
+                console.log(response.data)
+                setNotifications(response.data);
+            } catch (error) {
+                console.error("Error fetching notifications:", error);
+            }
+        };
+
+        loadNotifications();
+    }, []);
+
 
     const renderProfileMenu = (
         <Menu
@@ -212,7 +229,7 @@ export default function MiniDrawer() {
             horizontal: 'right',
         }}
     >
-        <NotificationsList onClose={handleNotificationClose} />
+        <NotificationsList onClose={handleNotificationClose} notifications={notifications} />
     </Popover>
     )
 
@@ -239,7 +256,7 @@ export default function MiniDrawer() {
                     <Box sx={{ flexGrow: 1 }} />
                     <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
                         <IconButton color="inherit" aria-describedby={notificationId} onClick={handleNotificationClick}>
-                            <Badge badgeContent={17} color="error">
+                            <Badge badgeContent={notifications.length} color="error">
                                 <NotificationsIcon />
                             </Badge>
                         </IconButton>

@@ -34,8 +34,28 @@ const removeVote = async (req, res) => {
     }
 };
 
+const getAllVotes = async (req, res) => {
+    try {
+        const votes = await voteService.getAllVotes();
+        res.status(200).json(votes);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+const getBestIdeasByVotes = async (req, res) => {
+    try {
+        const votes = await voteService.getBestIdeasByVotes();
+        res.status(200).json(votes);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createVote,
     getVotesForIdea,
-    removeVote
+    removeVote,
+    getAllVotes,
+    getBestIdeasByVotes
 };

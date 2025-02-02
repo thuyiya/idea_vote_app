@@ -6,5 +6,6 @@ const router = express.Router();
 
 router.post('/register', authMiddleware.authenticateToken, userController.createUser);
 router.get('/all', authMiddleware.authenticateToken, userController.getAllUsers);
+router.get('/lastMonth', authMiddleware.authenticateToken, userController.getThisMonthRegisteredEmployees);
 
 module.exports = router

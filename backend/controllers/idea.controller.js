@@ -55,11 +55,23 @@ const updateIdea = async (req, res) => {
     }
 };
 
+const getIdeasByStatus = async (req, res) => {
+    try {
+        const { status } = req.params;
+
+        const ideas = await ideaService.getIdeasByStatus(status);
+        res.status(200).json(ideas);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 
 module.exports = {
     createIdea,
     getAllIdeas,
     removeIdea,
     updateIdeaStatus,
-    updateIdea
+    updateIdea,
+    getIdeasByStatus
 }
